@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if df_html %}
+    <h3>Financial Transactions</h3>
+    {{ df_html|safe }}
+{% endif %}
+
+
+{% endblock %}

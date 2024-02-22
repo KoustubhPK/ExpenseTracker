@@ -1,0 +1,18 @@
+<head>
+    <title>Account Activation</title>
+</head>
+
+<body>
+    <p>Dear {{user.username|capfirst}},</p>
+    <br>
+    <p>Thank you for signing up with our website.</p>
+    <p>To activate your account, please click on the link below:</p>
+    <p><a href="http://{{ domain }}{% url 'account_activation' uidb64=uid token=token %}">Activate Account</a></p>
+    <br>
+    <p>If the above link does not work, you can copy and paste the following URL into your browser:</p>
+    <p>http://{{ domain }}{% url 'account_activation' uidb64=uid token=token %}</p>
+    <p>We are excited to have you as a member of our community. Thank you!</p>
+    <br>
+    <p>Sincerely,</p>
+    <p>The Team</p>
+</body>

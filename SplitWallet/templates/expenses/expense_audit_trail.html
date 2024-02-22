@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-8 mb-4">
+    <h2 class="m-0 font-weight-bold text-primary">Expense Audit Trail</h2>
+  </div>
+  {% if expense_details_list %}
+  <div class="col-md-4 text-right">
+    <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm print-hidden" onclick="window.print()" id="print-button">
+      <i class="fas fa-print fa-sm text-white-50"></i> Export
+    </button>
+  </div>
+</div>
+  
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Date</th>
+          <th>Expense</th>
+          <th>Payer</th>
+          <th>Payment Mode</th>
+          <th>Location</th>
+          <th>Contributor</th>
+          <th>Contribution</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for expense_details in expense_details_list %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ expense_details.expense.date|date:"d/M/Y" }}</td>
+            <td>
+              <a href="{% url 'expense_detail' expense_id=expense_details.expense.id %}">
+                {{ expense_details.expense.description }}
+              </a><a><i>({{ expense_details.expense.category }})</i></a>
+            </td>
+            <td>{{ expense_details.expense.payer.name.split.0 }} <i>(₹{{ expense_details.expense.amount }})</i></td>
+            <td>{{ expense_details.expense.payment_method }}</td>
+            <td>{% if expense_details.expense.location %}{{ expense_details.expense.location }}{% else %}NA{% endif %}</td>
+            <td>{{ expense_details.contributor_names }}</td>
+            <td>₹{{ expense_details.total_contribution|floatformat:2 }}</td>
+            <td>
+              {% if expense_details.expense.approval_status == 'Pending' %}
+                  <span class="badge bg-warning text-black fw-bold">
+              {% elif expense_details.expense.approval_status == 'Approved' %}
+                  <span class="badge bg-success text-white fw-bold">
+              {% elif expense_details.expense.approval_status == 'Rejected' %}
+                  <span class="badge bg-danger text-white fw-bold">
+              {% endif %}
+              {{ expense_details.expense.approval_status }}</span>
+            </td>
+          </tr>
+          {% comment %} {% if not forloop.last %}
+            <tr><td colspan="4">&nbsp;</td></tr> <!-- Add space between different expenses -->
+          {% endif %} {% endcomment %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% else %}
+    <div class="container-fluid">
+      <div class="text-center">
+          <p class="lead text-gray-800 mb-5">No expenses found for this event, unable to generate an audit trail.</p>
+          <p class="text-gray-500 mb-0">Go ahead and add your expenses!</p>
+          <a href="{% url 'event_details' event.id %}">&larr; Back to Event</a>
+      </div>
+    </div>
+{% endif %}
+
+<style>
+  @media print {
+    .print-hidden {
+      display: none !important;
+    }
+  }
+</style>
+
+
+{% endblock %}

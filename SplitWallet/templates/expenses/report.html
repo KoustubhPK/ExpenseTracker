@@ -1,0 +1,431 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+
+  {% comment %} <h3 class="mb-4">Financial Report</h3> {% endcomment %}
+  
+  {% if members %}
+  <form method="post">
+    {% csrf_token %}
+    <label for="user_select">Select User:</label>
+    <select name="user_select" id="user_select">
+      {% for member in members %}
+        <option value="{{ member.id }}" {% if user_report and member.id == user_report.user_id %}selected{% elif not user_report and member.id == selected_user_id %}selected{% endif %}>
+          {{ member.name.split.0 }}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="generate_report_button">
+      <i class="fas fa-chart-line fa-sm text-white-50"></i>
+      Generate Report
+    </button>
+
+    {% comment %} <a href="{% url 'download_report' event_id=event.id %}?download=true" class="btn btn-primary">Download PDF</a> {% endcomment %}
+    {% if user_report %}
+    <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" onclick="window.print()" id="print-button"><i
+        class="fas fa-print fa-sm text-white-50"></i> Export</a></button>
+    {% endif %}
+  </form>
+
+  
+  {% if user_report and not user_report.expenses_added %}
+    <p>{{ user_report.user_name }} has not incurred any expenses.</p>
+  {% endif %}
+  {% else %}
+    <div class="container-fluid">
+        <div class="text-center">
+            <p class="lead text-gray-800 mb-5">No members found for this event, unable to generate report.</p>
+            <p class="text-gray-500 mb-0">Go ahead and add members!</p>
+            <a href="{% url 'event_details' event.id %}">&larr; Back to Event</a>
+        </div>
+    </div>
+  {% endif %}
+
+  {% if user_report %}
+
+    <div class="container mt-4">
+      <div class="col-xl-12 col-lg-12 text-center">
+        
+        <div class="row">
+            <div class="col-md-8 text-left">
+                <p class="text-muted mb-0"><i class="far fa-calendar-check"></i> <span class="fw-bold"><u>Title:</u></span> {{ event.title }} - <i>({{ user_report.user_name }})</i></p>
+                <p class="text-muted"><i class="far fa-clock"></i> <span class="fw-bold"><u>Date:</u> </span>{{event.start_date|date:"d-M-Y"}} {% if event.start_date != event.end_date%}<i>to</i> {{event.end_date|date:"d-M-Y"}} {% endif %}{% if date_difference == 1 %} - <i> ({{ date_difference }} day)</i>{% else %} - <i>({{ date_difference }} days)</i>{% endif %}</p>
+            </div>
+            <div class="col-md-4 text-right">
+                <p class="text-muted"><i class="far fa-id-badge"></i> <span class="fw-bold">ID:</span> #{{ event.id }}-{{ selected_user_id }}</p>
+            </div>
+        </div>
+
+        <h3 class="m-0 font-weight-bold text-primary mb-4"><u>{{ user_report.user_name.split.0 }}'s Financial Report</u></h3>
+
+            
+
+            {% comment %} <ul class="list-unstyled">
+              <li class="text-muted"><i class="far fa-id-badge"></i> <span class="fw-bold">ID:</span> #{{ event.id }}-{{ selected_user_id }}</li>
+              <li class="text-muted"><i class="far fa-calendar-check"></i> <span class="fw-bold">Event Date: </span>{{event.start_date|date:"d-M-Y"}} {% if event.start_date != event.end_date%}<i>to</i> {{event.end_date|date:"d-M-Y"}} {% endif %}{% if date_difference == 1 %}<i> ({{ date_difference }} day)</i>{% else %} <i>({{ date_difference }} days)</i>{% endif %}</li>
+            </ul> {% endcomment %}
+
+        
+      </div>
+    </div>
+  
+
+    <div class="row">
+        {% if selected_user_expenses %}
+        <!-- Pie Chart -->
+        <div class="col-xl-4 col-lg-6 text-center">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ user_report.user_name.split.0 }}'s Contribution by Category</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="pieChart">pie chart</canvas>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Bar Chart -->
+        <div class="col-xl-6 col-lg-6 text-center">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ event.title }}'s Expense by Category</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="barChart">bar chart</canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+  <div class="row">
+    {% if user_report %}
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                          Total Expense</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ total_expense_amount|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-coins fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                          Your Contribution</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ user_report.total_contribution|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-hand-holding-heart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Weightage
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ selected_user.percentage_spent|floatformat:2 }}%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                        style="width: {{ selected_user.percentage_spent }}%" aria-valuenow="{{ selected_user.percentage_spent }}" aria-valuemin="0"
+                                        aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dumbbell fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Expense Count</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_report.expense_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Content Row -->
+
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th scope="col">Contributor</th>
+            <th scope="col">Amount Spent</th>
+            <th scope="col">Pay To</th>
+            <th scope="col">Get From</th>
+            <th scope="col">Weightage</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for contributor in contributors %}
+            <tr>
+                <td>{{ contributor.name.split.0 }}</td>
+                <td>₹{{ contributor.expenses_paid|floatformat:2 }}</td>
+                <td>{% if contributor.pay_to == 0 %}NA{% else %}₹{{ contributor.pay_to|floatformat:2 }} <i class="fas fa-arrow-down" style="color: #EF5350;"></i>{% endif %}</td>
+                <td>{% if contributor.get_from == 0 %}NA{% else %}₹{{ contributor.get_from|floatformat:2 }} <i class="fas fa-arrow-up" style="color: #66BB6A;"></i>{% endif %}</td>
+                <td>{{ contributor.percentage_spent|floatformat:2 }}%</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+  {% endif %}
+  
+  {% if selected_user_expenses %}
+    <div class="col-xl-12 col-lg-12 text-center">
+        <div class="card-header py-3">
+            <h3 class="m-0 font-weight-bold text-primary">Your Expenses</h3>
+        </div>
+    </div>
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Date</th>
+            <th scope="col">Expense</th>
+            <th scope="col">Amount Paid</th>
+            <th scope="col">Payment Mode</th>
+            <th scope="col">Location</th>
+            <th scope="col">Contributors</th>
+            <th scope="col">Contribution</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in selected_user_expenses %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ expense.date}}</td>
+                <td>{{ expense.description }} <i>({{ expense.category }})</i></td>
+                <td>₹{{ expense.amount|floatformat:2 }}</td>
+                <td>{{ expense.payment_method }}</td>
+                <td>{{ expense.location }}</td>
+                <td>{{ expense.contributors.count }}</td>
+                <td>₹{{ expense.contribution_amount|floatformat:2 }}</td>
+                <td>
+                    {% if expense.approval_status == 'Pending' %}
+                        <span class="badge bg-warning text-black fw-bold">
+                    {% elif expense.approval_status == 'Approved' %}
+                        <span class="badge bg-success text-white fw-bold">
+                    {% elif expense.approval_status == 'Rejected' %}
+                        <span class="badge bg-danger text-white fw-bold">
+                    {% endif %}
+                    {{ expense.approval_status }}</span>
+                </td>                
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{% comment %} {% else %}
+    <p>User not added or selected. {{ selected_user.name }}.</p> {% endcomment %}
+{% endif %}
+
+{% if other_user_expenses %}
+    <div class="col-xl-12 col-lg-12 text-center">
+        <div class="card-header py-3">
+            <h3 class="m-0 font-weight-bold text-primary">Other's Expenses</h3>
+        </div>
+    </div>
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Date</th>
+            <th scope="col">Expense</th>
+            <th scope="col">Amount Paid</th>
+            <th scope="col">Payment Mode</th>
+            <th scope="col">Location</th>
+            <th scope="col">Contributors</th>
+            <th scope="col">Contribution</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in other_user_expenses %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ expense.date}}</td>
+                <td>{{ expense.description }} <i>(Paid by: {{expense.payer.name.split.0}})</i></td>                
+                <td>₹{{ expense.amount|floatformat:2 }}</td>
+                <td>{{ expense.payment_method }}</td>
+                <td>{{ expense.location }}</td>
+                <td>{{ expense.contributors.count }}</td>
+                <td>₹{{ expense.contribution_amount|floatformat:2 }}</td>
+                <td>
+                    {% if expense.approval_status == 'Pending' %}
+                        <span class="badge bg-warning text-black fw-bold">
+                    {% elif expense.approval_status == 'Approved' %}
+                        <span class="badge bg-success text-white fw-bold">
+                    {% elif expense.approval_status == 'Rejected' %}
+                        <span class="badge bg-danger text-white fw-bold">
+                    {% endif %}
+                    {{ expense.approval_status }}</span>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{% comment %} {% else %}
+    <p>User not added or selected. {{ selected_user.name }}.</p> {% endcomment %}
+{% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch and render Pie Chart
+        fetch('/selected_user_expenses/{{ event.id }}/{{ selected_user.id }}/')
+            .then(response => response.json())
+            .then(data => {
+                var pieCtx = document.getElementById('pieChart').getContext('2d');
+
+                var pieData = {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(0, 255, 0, 0.7)',     // Green
+                            'rgba(0, 0, 255, 0.7)',     // Blue
+                            'rgba(255, 128, 0, 0.7)',   // Orange
+                            'rgba(128, 0, 255, 0.7)',   // Purple
+                            'rgba(0, 255, 255, 0.7)',   // Cyan
+                            'rgba(255, 255, 0, 0.7)',   // Yellow
+                            'rgba(128, 128, 128, 0.7)', // Gray
+                            // Add more colors if needed
+                        ],
+                    }],
+                };
+
+                var pieChart = new Chart(pieCtx, {
+                    type: 'pie',
+                    data: pieData,
+                });
+            });
+
+        // Fetch and render Bar Chart (you need to create a new endpoint for bar chart data)
+        fetch('/category_distribution/{{ event.id }}/')
+            .then(response => response.json())
+            .then(data => {
+                var barCtx = document.getElementById('barChart').getContext('2d');
+
+                var barData = {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Total Expense',
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(0, 255, 0, 0.7)',     // Green
+                            'rgba(0, 0, 255, 0.7)',     // Blue
+                            'rgba(255, 128, 0, 0.7)',   // Orange
+                            'rgba(128, 0, 255, 0.7)',   // Purple
+                            'rgba(0, 255, 255, 0.7)',   // Cyan
+                            'rgba(255, 255, 0, 0.7)',   // Yellow
+                            'rgba(128, 128, 128, 0.7)', // Gray
+                            // Add more colors if needed
+                        ],
+                        hoverOffset: 4,
+                        borderWidth: 1,
+                    }],
+                };
+
+                // Add the following to hide the legend entry for the specified dataset
+                var barOptions = {
+                    plugins: {
+                        legend: {
+                            labels: {
+                                filter: function (legendItem, chartData) {
+                                    return legendItem.datasetIndex !== 0; // Hide legend entry for dataset at index 0
+                                }
+                            }
+                        }
+                    }
+                };
+
+                var barChart = new Chart(barCtx, {
+                    type: 'bar',
+                    data: barData,
+                    options: barOptions
+                });
+            });
+    });
+</script>
+
+<script>
+  // Retrieve the selected user from local storage on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    var selectedUserId = localStorage.getItem('selected_user_id');
+    var userSelect = document.getElementById('user_select');
+    var generateReportButton = document.getElementById('generate_report_button');
+
+    if (selectedUserId) {
+      userSelect.value = selectedUserId;
+    } else {
+      // If no user is selected, default to the first user in the dropdown
+      userSelect.selectedIndex = 1;  // Assuming the first user is at index 1
+      localStorage.setItem('selected_user_id', userSelect.value);
+    }
+
+    // Add an event listener to the user_select dropdown to enable/disable the button
+    userSelect.addEventListener('change', function() {
+      var selectedUserId = this.value;
+      localStorage.setItem('selected_user_id', selectedUserId);
+
+      // Enable/disable the button based on user selection
+      generateReportButton.disabled = !selectedUserId;
+    });
+
+    // Enable/disable the button based on initial user selection
+    generateReportButton.disabled = !selectedUserId;
+  });
+</script>
+
+{% endblock %}

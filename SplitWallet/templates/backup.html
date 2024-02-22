@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h3 class="m-0 font-weight-bold text-primary text-center mb-4">Analytics</h3>
+
+    {% if events_by_year %}
+    <div class="row">
+        <div class="col-md-6">
+            <h5 class="font-weight-bold">Events Created by Year</h5>
+            <ul>
+                {% for entry in events_by_year %}
+                    <li>{{ entry.year }}: {{ entry.count }} events</li>
+                {% endfor %}
+            </ul>
+            <canvas id="barChart" width="400" height="400"></canvas>
+        </div>
+
+        <div class="col-md-6">
+            {% if expenses_by_month %}
+            <h5 class="font-weight-bold">Expenses Paid by Month</h5>
+            <ul>
+                {% for entry in expenses_by_month %}
+                    <li>{{ entry.year }}-{{ entry.month }}: {{ entry.count }} expenses</li>
+                {% endfor %}
+            </ul>
+            <canvas id="lineChart" width="400" height="400"></canvas>
+            {% endif %}
+        </div>
+
+        <div class="col-md-12">
+            {% if expenses_by_month %}
+            <h5 class="font-weight-bold">Expenses Paid by Month</h5>
+            <ul>
+                {% for entry in expenses_by_month %}
+                    <li>{{ entry.year }}-{{ entry.month }}: {{ entry.count }} expenses</li>
+                {% endfor %}
+            </ul>
+            <div id="chart" >
+
+            </div>
+            
+            {% endif %}
+        </div>
+
+    </div>
+    {% else %}
+    <div class="container-fluid">
+        <div class="text-center">
+            <p class="lead text-gray-800 mb-5">Events not created yet.</p>
+            <p class="text-gray-500 mb-0">Go ahead and create an event!</p>
+            <a href="{% url 'home' %}">&larr; Back to Home</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/analytics_data_by_month/')
+            .then(response => response.json())
+            .then(data => {
+                // Line Chart
+                var lineCtx = document.getElementById('lineChart').getContext('2d');
+
+                var lineData = {
+                    labels: data.line_chart_data.labels,
+                    datasets: [{
+                        label: 'Expenses Paid',
+                        data: data.line_chart_data.data,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false,
+                    }],
+                };
+
+                var lineChart = new Chart(lineCtx, {
+                    type: 'line',
+                    data: lineData,
+                });
+                
+                // Second fetch call for Bar Chart
+                fetch('/analytics_data_by_year/')
+                .then(response => response.json())
+                .then(data => {
+                    var barCtx = document.getElementById('barChart').getContext('2d');
+            
+                    var barData = {
+                        labels: data.bar_chart_data.labels,
+                        datasets: [{
+                            label: 'Events Created',
+                            data: data.bar_chart_data.data,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(0, 255, 0, 0.7)',     // Green
+                                'rgba(0, 0, 255, 0.7)',     // Blue
+                                'rgba(255, 128, 0, 0.7)',   // Orange
+                                'rgba(128, 0, 255, 0.7)',   // Purple
+                                'rgba(0, 255, 255, 0.7)',   // Cyan
+                                'rgba(255, 255, 0, 0.7)',   // Yellow
+                                'rgba(128, 128, 128, 0.7)', // Gray
+                                // Add more colors if needed
+                            ],
+                            hoverOffset: 4,
+                            borderWidth: 2,
+                        }],
+                    };
+            
+                    var barOptions = {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                precision: 0,
+                            },
+                        },
+                    };
+            
+                    var barChart = new Chart(barCtx, {
+                        type: 'bar',
+                        data: barData,
+                        options: barOptions,
+                    });
+            });
+        });
+    });
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/analytics_data/')
+            .then(response => response.json())
+            .then(data => {
+                var options = {
+                    chart: {
+                        height: 350,
+                        width: 900,
+                        type: "line",
+                        stacked: false
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    colors: ['#99C2A2', '#C5EDAC', '#66C7F4'],
+                    series: [
+                        {
+                            name: 'Events Created',
+                            type: 'bar',
+                            data: data.bar_chart_events_by_year.data,
+                        },
+                        {
+                            name: 'Event Expenditure',
+                            type: 'bar',
+                            data: data.event_expenditure_data.data,
+                        },
+                        {
+                            name: 'Expenses Paid',
+                            type: 'line',
+                            data: data.line_chart_expenses_by_month.data,
+                        },
+                    ],
+                    stroke: {
+                        width: [4, 4, 4]
+                    },
+                    plotOptions: {
+                        bar: {
+                            columnWidth: "20%"
+                        }
+                    },
+                    xaxis: {
+                        categories: data.bar_chart_events_by_year.labels,
+                    },
+                    yaxis: [
+                        {
+                            seriesName: 'Events Created',
+                            axisTicks: {
+                                show: true
+                            },
+                            axisBorder: {
+                                show: true,
+                            },
+                            title: {
+                                text: "Events Created"
+                            }
+                        },
+                        {
+                            seriesName: 'Event Expenditure',
+                            opposite: true,
+                            axisTicks: {
+                                show: true
+                            },
+                            axisBorder: {
+                                show: true,
+                            },
+                            title: {
+                                text: "Event Expenditure"
+                            }
+                        },
+                    ],
+                    tooltip: {
+                        shared: false,
+                        intersect: true,
+                        x: {
+                            show: false
+                        }
+                    },
+                    legend: {
+                        horizontalAlign: "left",
+                        offsetX: 40
+                    }
+                };
+    
+                var chart = new ApexCharts(document.querySelector("#chart"), options);
+    
+                chart.render();
+            });
+    });
+</script>
+
+
+
+
+
+
+{% endblock %}

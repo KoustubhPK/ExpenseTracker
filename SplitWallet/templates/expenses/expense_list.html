@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2 class="mb-4">Expense List</h2>
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Date</th>
+          <th scope="col">Contributors</th>
+          {% comment %} <th scope="col">Actions</th> {% endcomment %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for expense in expenses %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'expense_detail' expense_id=expense.id %}">
+                {{ expense.description }}
+              </a>
+            </td>
+            <td>₹{{ expense.amount }} <i>({{expense.payer.name}})</i></td>
+            <td>{{ expense.date }}</td>
+            <td>
+              {% for contributor in expense.contributors.all %}
+                {{ contributor.name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </td>
+            {% comment %} <td>
+              <a href="{% url 'expense_detail' expense.id %}" class="btn btn-success btn-sm">View</a>
+              <a href="{% url 'edit_expense' expense.id %}" class="btn btn-info btn-sm">Edit</a>
+              <!-- Add delete button if needed -->
+              
+              <form id="deleteForm" method="post" action="{% url 'delete_expense' expense.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Delete</button>
+            
+                <!-- Modal for confirmation -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">{{ expense.description }}</h5>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">Are you sure you want to delete?</div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" onclick="submitDeleteForm()">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </form>
+              
+            </td> {% endcomment %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+<!-- JavaScript to handle deletion -->
+<script>
+  function submitDeleteForm() {
+      // Submit the form for deletion
+      document.getElementById('deleteForm').submit();
+      // Close the modal
+      $('#deleteModal').modal('hide');
+  }
+</script>
+{% endblock %}

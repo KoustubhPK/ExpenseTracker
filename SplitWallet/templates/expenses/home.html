@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container mt-4">
+    <div class="col-xl-12 col-lg-12 text-center">
+      <h2 class="mb-4">Welcome to Your Expense Tracker</h2>
+      <p class="lead">Track and manage your expenses easily with our Expense Tracker.</p>
+        <a href="{% url 'create_event' %}" class="btn btn-primary btn-icon-split mb-2">
+        <span class="icon text-white-50"><i class="fas fa-flag"></i></span>
+        <span class="text">Create Your Event</span>
+        </a>
+      <p>Explore the options inside the Event to get started.</p>
+    </div>
+  </div>
+
+  <div class="col-xl-12 col-md-12 mb-12">
+    <div class="col-xl-12 col-lg-12 text-center">
+      <div class="card-header py-3">
+          <h3 class="m-0 font-weight-bold text-primary">Your Events</h3>
+      </div>
+    </div>
+    {% if events %}
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th scope="col">No.</th>
+          <th scope="col">Title</th>
+          <th scope="col">Date</th>
+          <th scope="col">Members</th>
+          <th scope="col">Expenditure</th>
+          <th scope="col">Location</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in events %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><a href="{% url 'event_details' item.event.id %}">{{ item.event.title }}</a>
+              {% if item.date_difference == 1 %}<i> ({{ item.date_difference }} day){% else %}<i> ({{ item.date_difference }} days)</i>{% endif %}
+            </td>
+            <td>{{ item.event.start_date|date:"d-M-Y" }} {% if item.event.start_date != item.event.end_date %}<i>to</i> {{ item.event.end_date|date:"d-M-Y" }}{% endif %}
+              <i>({{ item.event.end_date|timesince }} ago)</i>
+            </td>
+            <td>{{ item.member_count }}</td>
+            <td>{% if item.total_expense_amount == 0 %}NA{% else %}₹{{ item.total_expense_amount|floatformat:2 }}{% endif %}</td>
+            <td>{{ item.event.location }}</td>
+            <td>
+              {% if item.event.all_expenses_approved %}
+                  <img src="{% static 'img/check-circle-fill.svg' %}" style="width: 18px; height: 18px;" alt="Settled" title="All Expenses Approved">
+              {% elif item.event.expense_set.exists %}
+                  <img src="{% static 'img/exclamation-circle-fill.svg' %}" style="width: 18px; height: 18px;" alt="Not Settled" title="Expenses Pending For Approval">
+              {% else %}
+                  <img src="{% static 'img/x-circle-fill.svg' %}" style="width: 18px; height: 18px;" alt="No Expense" title="No Expenses Added Yet">
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>    
+    </table>
+    {% else %}
+      
+      <div class="col-xl-12 col-lg-12 text-center">
+        <div class="card-header py-3">
+          <p>Events not created yet.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+{% endblock %}

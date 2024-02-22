@@ -1,0 +1,157 @@
+@media print {
+    /* Hide the form and the button when printing */
+    form {
+      display: none;
+    }
+    button#print-button {
+      display: none;
+    }
+
+    /* Hide the h2 tag in the report when printing */
+  h2.mb-4 {
+    display: none;
+  }
+}
+
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+}
+
+.custom-control-label {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.custom-control-input:checked + .custom-control-label {
+  color: #4e73df /* Change this to your desired color */
+}
+
+
+
+#chart {
+  max-width: 900px;
+  margin: 35px auto;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+#chart .apexcharts-canvas {
+  overflow: hidden; /* Hide overflow to prevent x-axis labels from overflowing */
+}
+
+#chart .apexcharts-legend {
+  font-size: 14px;
+  color: #333;
+}
+
+#chart .apexcharts-tooltip {
+  font-size: 14px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 8px 12px;
+  color: #333;
+}
+
+#chart .apexcharts-tooltip-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+#chart .apexcharts-tooltip-y-group {
+  margin-top: 6px;
+}
+
+/* settlement */
+
+.mt-50{
+
+  margin-top: 50px;
+}
+
+.mb-50{
+
+  margin-bottom: 50px;
+}
+
+
+
+.card {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-clip: border-box;
+  border: 1px solid rgba(0,0,0,.125);
+  border-radius: .1875rem;
+}
+
+.card-img-actions {
+  position: relative;
+}
+.card-body {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.card-title {
+  margin-top: 10px;
+  font-size: 17px;
+}
+
+.card-header {
+  padding: .9375rem 1.25rem;
+  margin-bottom: 0;
+  background-color: rgba(0,0,0,.02);
+  border-bottom: 1px solid rgba(0,0,0,.125);
+}
+
+a{
+
+  text-decoration: none !important;
+}
+
+
+.btn-light {
+  color: #333;
+  background-color: #fafafa;
+  border-color: #ddd;
+}
+.header-elements-inline {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+}
+
+@media (min-width: 768px){
+.wmin-md-400 {
+  min-width: 400px!important;
+}}
+
+
+
+
+.btn-labeled>b {
+  position: absolute;
+  top: -1px;
+  background-color: blue;
+  display: block;
+  line-height: 1;
+  padding: .62503rem;
+}

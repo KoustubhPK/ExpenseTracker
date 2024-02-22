@@ -1,0 +1,182 @@
+
+{% block content %}
+
+<h2 class="mb-4">Financial Report</h2>
+  
+  
+
+  <div class="container mt-4">
+  {% if user_report %}
+  <h3>{{ user_report.user_name }}'s Financial Report</h3>
+
+
+  <div class="row">
+    {% if user_report %}
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                          Total Expense</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ total_expense_amount|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                          Your Contribution</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ user_report.total_contribution|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Weightage
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ selected_user.percentage_spent|floatformat:2 }}%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                        style="width: {{ selected_user.percentage_spent }}%" aria-valuenow="{{ selected_user.percentage_spent }}" aria-valuemin="0"
+                                        aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Expense Count</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_report.expense_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-comments fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Content Row -->
+
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th scope="col">Contributor</th>
+            <th scope="col">Amount Spent</th>
+            <th scope="col">Pay To</th>
+            <th scope="col">Get From</th>
+            <th scope="col">Weightage</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for contributor in contributors %}
+            <tr>
+                <td>{{ contributor.name }}</td>
+                <td>{{ contributor.expenses_paid|floatformat:2 }}</td>
+                <td>{{ contributor.pay_to|floatformat:2 }}</td>
+                <td>{{ contributor.get_from|floatformat:2 }}</td>
+                <td>{{ contributor.percentage_spent|floatformat:2 }}%</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+  {% endif %}
+  
+  {% if selected_user_expenses %}
+  <h3>Your Expenses</h3>
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Expense</th>
+            <th scope="col">Amount Paid</th>
+            <th scope="col">Contributors</th>
+            <th scope="col">Contribution</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in selected_user_expenses %}
+            <tr>
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.description }}({{ expense.category }})</td>
+                <td>{{ expense.amount|floatformat:2 }}</td>
+                <td>{{ expense.contributors.count }}</td>
+                <td>{{ expense.contribution_amount|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{% comment %} {% else %}
+    <p>User not added or selected. {{ selected_user.name }}.</p> {% endcomment %}
+{% endif %}
+
+{% if other_user_expenses %}
+  <h3>Other's Expenses</h3>
+  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Expense</th>
+            <th scope="col">Amount Paid</th>
+            <th scope="col">Contributors</th>
+            <th scope="col">Contribution</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in other_user_expenses %}
+            <tr>
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.description }}, Paid by: ({{expense.payer.name.split.0}})</td>                
+                <td>{{ expense.amount|floatformat:2 }}</td>
+                <td>{{ expense.contributors.count }}</td>
+                <td>{{ expense.contribution_amount|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{% endif %}
+
+</div>
+
+{% endblock %}

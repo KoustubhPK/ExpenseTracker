@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="card text-center">
+    <div class="card-body">
+        <body>
+            <div class="icon success">
+                <i class="bi bi-person-check" style="font-size: 70px; color: green;"></i>
+            </div>
+            <h3 class="m-0 font-weight-bold text-primary">Welcome, {{ user.username|capfirst }}!</h3>
+            <h1>Account Activated Successfully.</h1>
+            <p>Your account has been successfully activated. You can now log in using your credentials.</p>
+            <p>
+                <a href="{% url 'login' %}" class="btn btn-success">
+                    <span class="icon text-white-50"><i class="fas fa-sign-in-alt"></i></span>
+                    <span class="text">Login</span>
+                </a>
+            </p>
+        </body>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Default checked -->
+<div class="container-fluid">
+    <div class="text-center">
+        <p class="lead text-gray-800 mb-5">Select Theme!</p>
+        <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="customSwitch1" checked>
+            <label class="custom-control-label" id="customSwitchLabel" for="customSwitch1"></label>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Retrieve theme preference from localStorage
+    const initialTheme = localStorage.getItem('darkMode') === 'true';
+
+    // Set the initial state of the custom switch
+    document.getElementById('customSwitch1').checked = initialTheme;
+
+    // Add an event listener for the change event on the custom switch
+    document.getElementById('customSwitch1').addEventListener('change', function() {
+        const darkMode = this.checked;
+        toggleTheme(darkMode);
+    });
+
+    // Function to toggle the theme
+    function toggleTheme(darkMode) {
+        // Save the theme preference to localStorage
+        localStorage.setItem('darkMode', darkMode);
+
+        // Perform the fetch to update the theme on the server
+        fetch('{% url "settings" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: `dark_mode=${darkMode}`,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                console.error('Failed to update theme preference');
+            }
+        })
+        .catch(error => {
+            console.error('Error during theme preference update:', error);
+        });
+    }
+
+    // Update the label text based on the initial theme
+    const label = document.getElementById('customSwitchLabel');
+    label.textContent = initialTheme ? 'Dark Mode' : 'Light Mode';
+</script>
+
+
+
+
+{% comment %} <script>lightModeBtn
+    document.getElementById('lightModeBtn').addEventListener('click', function() {
+        toggleTheme(false);
+    });
+
+    document.getElementById('darkModeBtn').addEventListener('click', function() {
+        toggleTheme(true);
+    });
+
+    function toggleTheme(darkMode) {
+        fetch('{% url "settings" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: `dark_mode=${darkMode}`,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                console.error('Failed to update theme preference');
+            }
+        })
+        .catch(error => {
+            console.error('Error during theme preference update:', error);
+        });
+    }
+</script> {% endcomment %}
+
+{% endblock %}

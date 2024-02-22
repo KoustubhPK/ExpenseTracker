@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %} 
+  <div class="container mt-4">
+    <h3 class="m-0 font-weight-bold text-primary text-center mb-4">Expense Details</h3>
+    <dl class="row">
+      <dt class="col-sm-3">Receipt ID:</dt>
+      <dd class="col-sm-9">#{{ expense.event.id }}-{{ expense.payer.id }}-{{ expense.id }}</dd>
+
+      <dt class="col-sm-3">Event Name:</dt>
+      <dd class="col-sm-9">{{ expense.event.title }}</dd>
+
+      <dt class="col-sm-3">Description:</dt>
+      <dd class="col-sm-9">{{ expense.description }} <i>({{ expense.category }})</i></dd>
+
+      <dt class="col-sm-3">Payer:</dt>
+      <dd class="col-sm-9">{{ expense.payer.name.split.0 }}</dd>
+
+      <dt class="col-sm-3">Amount:</dt>
+      <dd class="col-sm-9">{{ expense.amount }} ({{ expense.currency }})</dd>
+
+      <dt class="col-sm-3">Payment Mode:</dt>
+      <dd class="col-sm-9"> {% if expense.payment_method %}
+        {{ expense.payment_method }}
+        {% else %}
+          Not Updated.
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Date:</dt>
+      <dd class="col-sm-9">{{ expense.date|date:"d-M-Y" }}</dd>
+
+      <dt class="col-sm-3">Contributors:</dt>
+      <dd class="col-sm-9">
+        {% for contributor in expense.contributors.all %}
+          {{ contributor.name.split.0 }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </dd>
+
+      <dt class="col-sm-3">Contributions:</dt>
+      <dd class="col-sm-9">
+        {{ contributions_amount|floatformat:2 }} ({{ expense.currency }})
+      </dd>
+
+      <dt class="col-sm-3">Document:</dt>
+      <dd class="col-sm-9">
+          {% if expense.document %}
+            <a href="{{ expense.document.url }}" target="_blank">View</a>
+          {% else %}
+            NA
+          {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Notes:</dt>
+      <dd class="col-sm-9"> {% if expense.notes %}
+        {{ expense.notes }}
+        {% else %}
+          NA
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Location:</dt>
+      <dd class="col-sm-9"> {% if expense.location %}
+        {{ expense.location }}
+        {% else %}
+          NA
+        {% endif %}
+      </dd>
+
+      <!-- Add other fields accordingly -->
+
+      <dt class="col-sm-3">Last Updated:</dt>
+      <dd class="col-sm-9">{{ expense.updated_date }}</dd>
+
+      <dt class="col-sm-3">Status:</dt>
+      <dd class="col-sm-9">
+        {% if expense.approval_status == 'Pending' %}
+            <span class="badge bg-warning text-black fw-bold">
+        {% elif expense.approval_status == 'Approved' %}
+            <span class="badge bg-success text-white fw-bold">
+        {% elif expense.approval_status == 'Rejected' %}
+            <span class="badge bg-danger text-white fw-bold">
+        {% endif %}
+        {{ expense.approval_status }}</span>
+      </dd>
+
+    </dl>
+    <a href="{% url 'expense_audit_trail' expense.event.id %}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm print-hidden">
+      <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
+      <span class="text">Back</span>
+    </a>
+    <a href="{% url 'edit_expense' expense.id %}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm print-hidden">
+      <span class="icon text-white-50"><i class="fas fa-edit"></i></span>
+      <span class="text">Edit</span>
+    </a>
+    
+    
+    <form id="deleteForm" method="post" action="{% url 'delete_expense' expense.id %}" style="display: inline;">
+      {% csrf_token %}
+      <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" id="print-button">
+        <span class="icon text-white-50"><i class="fas fa-trash-alt"></i></span>
+        <span class="text">Delete</span>
+      </button>
+  
+      <!-- Modal for confirmation -->
+      <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">{{ expense.description }}</h5>
+                      <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">×</span>
+                      </button>
+                  </div>
+                  <div class="modal-body">Are you sure you want to delete the expense?</div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">
+                        <span class="icon text-white-50"><i class="fas fa-times-circle"></i></span>
+                        <span class="text">Cancel</span>
+                      </button>
+                      <button type="button" class="btn btn-danger" onclick="submitDeleteForm()">
+                        <span class="icon text-white-50"><i class="fas fa-trash-alt"></i></span>
+                        <span class="text">Delete</span>
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </form>
+    
+    <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm print-hidden" onclick="window.print()" id="print-button">
+      <i class="fas fa-print fa-sm text-white-50"></i> Export
+    </button>
+
+<style>
+  @media print {
+    .print-hidden {
+      display: none !important;
+    }
+  }
+</style>
+
+<!-- JavaScript to handle deletion -->
+<script>
+  function submitDeleteForm() {
+      // Submit the form for deletion
+      document.getElementById('deleteForm').submit();
+      // Close the modal
+      $('#deleteModal').modal('hide');
+  }
+</script>
+
+
+{% endblock %}

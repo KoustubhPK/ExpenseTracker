@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container d-flex justify-content-center mt-50 mb-50">
+            
+    <div class="row">
+       
+         <div class="col-md-12">
+
+            <div class="card">
+                <div class="card-header bg-transparent header-elements-inline">
+
+
+                    <div class="pull-right">
+                        {% if event.all_expenses_approved %}
+                            <img src="{% static 'img/check-circle-fill.svg' %}" style="width: 18px; height: 18px;" alt="Settled" title="All Expenses Approved">
+                        {% elif event.expense_set.exists %}
+                            <img src="{% static 'img/exclamation-circle-fill.svg' %}" style="width: 18px; height: 18px;" alt="Not Settled" title="Expenses Pending For Approval">
+                        {% endif %}
+                    </div>
+
+
+                    <div class="header-elements">
+                        <button type="button" class="btn btn-light btn-sm"><i class="fa fa-file mr-2"></i> Save</button>
+                        <button type="button" class="btn btn-light btn-sm ml-3"><i class="fa fa-print mr-2"></i> Print</button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-4">
+
+                                {% if event.all_expenses_approved %}
+                                    <img src="{% static 'img/paid.svg' %}" style="width: 120px; height: 120px;" alt="Settled" title="All Expenses Approved">
+                                {% elif event.expense_set.exists %}
+                                    <img src="{% static 'img/unpaid.png' %}" style="width: 120px; height: 120px;" alt="Not Settled" title="Expenses Pending For Approval">
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="mb-4 ">
+                                <div class="text-sm-right">
+                                    <h4 class="text-danger mb-2 mt-md-2">Invoice #{{ event.id }}</h4>
+                                    <ul class="list list-unstyled mb-0">
+                                        <li>Date: <span class="font-weight-semibold">{{ event.start_date}}</span></li>
+                                        <li>Due date: <span class="font-weight-semibold">{{ event.end_date}}</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-md-flex flex-md-wrap">
+                        <div class="mb-4 mb-md-2 text-left">
+                            <span class="text-muted">Invoice To:</span>
+                            <ul class="list list-unstyled mb-0">
+                                <li><h5 class="my-2">{{ event.title}}</h5></li>
+                                <li><span class="font-weight-semibold">{{ event.location }}</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-2 ml-auto">
+                            <span class="text-muted">Payment Details:</span>
+                            <div class="d-flex flex-wrap wmin-md-400">
+                                <ul class="list list-unstyled mb-0 text-left">
+                                    <li><h5 class="my-2">Total Due:</h5></li>
+                                    <li>Contributors:</li>
+                                </ul>
+
+                                <ul class="list list-unstyled text-right mb-0 ml-auto">
+                                    <li><h5 class="font-weight-semibold my-2">₹{{ total_expense_amount|floatformat:2 }}</h5></li>
+                                    <li><span class="font-weight-semibold">{{ members }}</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-lg">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Contribution</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for expense in member_expenses %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>180</td>
+                                <td>
+                                    <h6 class="mb-0">{{ expense.description}} <i>({{ expense.payer}})</i></h6>
+                                    <span class="text-muted">{{ expense.location}}</span>
+                                </td>
+                                <td>₹{{ expense.contribution_amount|floatformat:2 }}</td>
+                                <td><span class="font-weight-semibold">₹{{ expense.amount|floatformat:2 }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-body">
+                    <div class="d-md-flex flex-md-wrap">
+                       
+
+                        <div class="pt-2 mb-3 wmin-md-400 ml-auto">
+                            <h6 class="mb-3 text-left">Total due</h6>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-left">Subtotal:</th>
+                                            <td class="text-right">₹{{ each|floatformat:2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-left">Members: <span class="font-weight-normal">({{ member_percentile|floatformat:2 }}%)</span></th>
+                                            <td class="text-right">{{ members }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-left">Total:</th>
+                                            <td class="text-right text-primary"><h5 class="font-weight-semibold">₹{{ total_expense_amount|floatformat:2 }}</h5></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer text-center">
+                    <h4 class="m-0 font-weight-bold text-center mb-2">THANK YOU</h4>
+                    <span class="text-muted" style="font-size:15px;">For any inquiries regarding this invoice, please contact:</span>
+                    <p style="font-size:15px;"><i class="fas fa-envelope"></i> koustubhpk@gmail.com | <i class="fas fa-phone"></i> +91 87-9392-9167 </p>
+                </div>
+                
+            </div>
+             
+         </div>
+
+
+    </div>
+</div>
+
+{% endblock %}

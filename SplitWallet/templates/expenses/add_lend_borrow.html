@@ -1,0 +1,35 @@
+<!-- add_lend_borrow.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2 class="mb-4">Add {{ transaction_type|capfirst }}</h2>
+    <form method="post" class="slick-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.media }}
+
+      <!-- Add hidden fields for excluded fields -->
+      {{ form.description }}
+      {{ form.lender }}
+      {{ form.borrower }}
+      <!-- Add hidden field for transaction_type -->
+      <input type="hidden" name="transaction_type" value="{{ transaction_type }}">
+
+      <!-- Additional fields for lending/borrowing -->
+      {% if transaction_type == 'lend' %}
+        <label for="{{ form.amount.id_for_label }}">Amount Lended:</label>
+        {{ form.amount }}
+      {% elif transaction_type == 'borrow' %}
+        <label for="{{ form.amount.id_for_label }}">Amount Borrowed:</label>
+        {{ form.amount }}
+      {% endif %}
+
+      <!-- Add other fields as needed -->
+
+      <button type="submit" class="btn btn-primary">Save {{ transaction_type|capfirst }}</button>
+    </form>
+  </div>
+  <script src="{% static 'js/custom.js' %}"></script>
+{% endblock %}

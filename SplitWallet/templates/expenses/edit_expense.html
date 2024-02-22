@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h3 class="m-0 font-weight-bold text-primary text-center mb-4">Edit Expense</h3>
+    <form method="post" class="slick-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.media }}
+      {% comment %} {{ form|crispy }} {% endcomment %}
+
+      <div class="form-row">
+        <div class="form-group col-md-4 mb-0">
+          {{ form.description|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.date|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.amount|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.payer|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.payment_method|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.currency|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.category|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.approval_status|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-4 mb-0">
+          {{ form.location|as_crispy_field }}
+        </div>
+      </div>
+      {{ form.contributors|as_crispy_field }}
+      {{ form.notes|as_crispy_field }}
+      {{ form.document|as_crispy_field }}
+      
+      <button type="submit" class="btn btn-primary">
+        <span class="icon text-white-50"><i class="fas fa-save"></i></span>
+        <span class="text">Save Changes</span>
+      </button>
+      <a href="{% url 'expense_detail' expense.id %}" class="btn btn-success">
+        <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
+        <span class="text">Go Back</span>
+      </a>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('id_date');  // Replace 'id_date' with the actual ID of your date field
+        const startDate = new Date('{{ event.start_date|date:"Y-m-d" }}');
+        const endDate = new Date('{{ event.end_date|date:"Y-m-d" }}');
+
+        // Set the min and max attributes for the date field
+        dateInput.setAttribute('min', formatDate(startDate));
+        dateInput.setAttribute('max', formatDate(endDate));
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    });
+  </script>
+
+{% endblock %}

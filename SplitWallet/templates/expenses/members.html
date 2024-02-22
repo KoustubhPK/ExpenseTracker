@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h3 class="m-0 font-weight-bold text-primary text-center mb-4">{{ event.title }} Members</h2>
+      {% if members %}
+      <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Name</th>
+            <th>Total Expense</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in members %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ member.name }}</td>
+              <td>{% if member.total_expenses_paid == 0 %}NA{% else %}₹{{ member.total_expenses_paid|floatformat:2 }}{% endif %}</td>
+              <td>
+                <a href="{% url 'edit_member' event_id=event.id member_id=member.id %}" class="btn btn-primary btn-sm">
+                  <span class="icon text-white-50"><i class="fas fa-edit"></i></span>
+                  <span class="text">Edit</span>
+                </a>
+                
+                <form id="deleteForm{{ member.id }}" method="post" action="{% url 'delete_member' event_id=event.id member_id=member.id %}" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal{{ member.id }}">
+                    <span class="icon text-white-50"><i class="fas fa-trash-alt"></i></span>
+                    <span class="text">Delete</span>
+                  </button>
+                  <!-- Modal for confirmation -->
+                  <div class="modal fade" id="deleteModal{{ member.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">{{ member.name }}</h5>
+                          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                          </button>
+                        </div>
+                        <div class="modal-body"><p class="mb-1"><h8 class="m-0 font-weight-bold text-danger mb-4"><i class="fas fa-bell"></i> Alert!</h8></p>Are you sure you want to delete the member '{{ member.name }}'? This action cannot be undone.</div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-primary" data-dismiss="modal">
+                            <span class="icon text-white-50"><i class="fas fa-times-circle"></i></span>
+                            <span class="text">Cancel</span>
+                          </button>
+                          <button type="button" class="btn btn-danger" onclick="submitDeleteForm('{{ member.id }}')">
+                            <span class="icon text-white-50"><i class="fas fa-trash-alt"></i></span>
+                            <span class="text">Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="container-fluid">
+        <div class="text-center">
+            <p class="lead text-gray-800 mb-5">Oops! It looks like there are no members added for this event yet.</p>
+            <p class="text-gray-500 mb-0">Feel free to add members and start sharing expenses!</p>
+            <a href="{% url 'event_details' event.id %}">&larr; Back to Event</a>
+        </div>
+      </div>
+      {% endif %}
+  </div>
+
+<!-- JavaScript to handle deletion -->
+<script>
+  function submitDeleteForm(memberId) {
+    // Submit the form for deletion
+    document.getElementById('deleteForm' + memberId).submit();
+    // Close the modal
+    $('#deleteModal' + memberId).modal('hide');
+  }
+</script>
+
+{% endblock %}

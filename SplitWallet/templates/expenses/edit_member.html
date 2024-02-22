@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container-fluid mt-4">
+    <div class="text-center">
+      <h3 class="m-0 font-weight-bold text-primary text-center mb-4">Edit Member</h3>
+      
+      <form method="post" action="{% url 'edit_member' event_id=event.id member_id=member.id %}">
+        {% csrf_token %}
+        <label for="new_name">Update Name:</label>
+        <input type="text" id="new_name" name="new_name" value="{{ member.name }}" required>
+        <div class="mt-2"> <!-- Add margin-top to create a new line for the buttons -->
+          <button type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <span class="icon text-white-50"><i class="fas fa-save"></i></span>
+            <span class="text">Save Changes</span>
+          </button>
+          <a href="{% url 'members' event_id=event.id %}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
+            <span class="icon text-white-50"><i class="fas fa-times-circle"></i></span>
+            <span class="text">Cancel</span>
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

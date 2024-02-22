@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3 class="m-0 font-weight-bold text-primary text-center mb-4">Analytics</h3>
+
+    {% if events_by_year %}
+    
+    <div class="row">
+      <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-4 col-md-6 mb-4">
+          <div class="card border-left-primary shadow h-100 py-2">
+              <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Events</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_events }}</div>
+                      </div>
+                      <div class="col-auto">
+                          <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Earnings (Monthly) Card Example -->
+      <div class="col-xl-4 col-md-6 mb-4">
+          <div class="card border-left-success shadow h-100 py-2">
+              <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Total Expenses</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_expenses_count }}</div>
+                      </div>
+                      <div class="col-auto">
+                          <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Pending Requests Card Example -->
+      <div class="col-xl-4 col-md-6 mb-4">
+          <div class="card border-left-danger shadow h-100 py-2">
+              <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                          <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Total Expenditure</div>
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ total_event_expenditure|floatformat:2  }}</div>
+                      </div>
+                      <div class="col-auto">
+                          <i class="fas fa-comment-dollar fa-2x text-gray-300"></i>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    
+
+    <h5 class="h3 mb-2 text-gray-800">Trend</h5>
+    <p style="font-size:15px;">Explore the trends in your expenses and events over time with our interactive chart.
+      The chart visualizes the number of events created and expenses paid each month,
+      providing valuable insights into your financial activities.</p>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div id="simple" class="card shadow mb-4">
+        </div>
+      </div>        
+    </div>
+
+    
+
+    <div class="row">
+      <div class="col-md-6">
+          <div id="app-cat" class="card shadow mb-4">
+          </div>
+      </div>
+
+      <div class="col-md-6">
+          <div id="pie" class="card shadow mb-4">
+          </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="container-fluid">
+        <div class="text-center">
+            <p class="lead text-gray-800 mb-5">Events not created yet.</p>
+            <p class="text-gray-500 mb-0">Go ahead and create an event!</p>
+            <a href="{% url 'home' %}">&larr; Back to Home</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+    
+
+
+<script src="https://cdn.jsdelivr.net/npm/react@16.12/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@16.12/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prop-types@15.7.2/prop-types.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-apexcharts@1.3.6/dist/react-apexcharts.iife.min.js"></script>
+
+
+
+  <script type="text/babel">
+    class ApexChart extends React.Component {
+      constructor(props) {
+        super(props);
+  
+        this.state = {
+          categories: [],
+          amounts: [],
+          options: {
+            chart: {
+              type: 'bar',
+              height: 350
+            },
+            title: {
+              text: 'Category Distribution',
+              align: 'left',
+              offsetX: 110
+            },
+            plotOptions: {
+              bar: {
+                horizontal: true,
+                dataLabels: {
+                  position: 'top',                  
+                },
+              }
+            },
+            dataLabels: {
+              enabled: true,
+              offsetX: -6,
+              style: {
+                fontSize: '12px',
+                colors: ['#fff']
+              }
+            },
+            xaxis: {
+              categories: []
+            }
+          },
+        };
+      }
+
+      componentDidMount() {
+        fetch('/expense_by_category/')
+          .then(response => response.json())
+          .then(data => {
+            const categories = Object.keys(data);
+            const amounts = Object.values(data);
+            this.setState(prevState => ({
+              categories,
+              amounts,
+              options: {
+                ...prevState.options,
+                xaxis: {
+                  ...prevState.options.xaxis,
+                  categories: categories
+                }
+              }
+            }));
+          })
+          .catch(error => console.error('Error fetching expense data:', error));
+      }
+  
+      render() {
+        const { categories, amounts, options } = this.state;
+        // Custom formatter function to add rupee sign to the amount
+        const rupeeFormatter = (val) => {
+          return `₹ ${val}`;
+        };
+        // Update dataLabels options to use the custom formatter
+        options.dataLabels.formatter = rupeeFormatter;
+        
+              
+        return (
+          <div>
+            <div id="chart-cust">
+              <ReactApexChart options={options} series={[{ data: amounts }]} type="bar" height={350} />
+            </div>
+            <div id="html-dist"></div>
+          </div>
+        );
+      }
+    }
+  
+    const domContainer = document.querySelector('#app-cat');
+    ReactDOM.render(React.createElement(ApexChart), domContainer);
+</script>
+
+
+<script type="text/babel">
+  class ApexChart extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        series: [],
+        options: {
+          chart: {
+            width: 380,
+            type: 'pie',
+          },
+          labels: [],
+          title: {
+            text: 'Category Utilization',
+            align: 'left',
+            offsetX: 110
+          },
+          responsive: [{
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 200
+              },
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }]
+        }
+      };
+    }
+
+    componentDidMount() {
+      fetch('/percentage_by_category/')
+        .then(response => response.json())
+        .then(data => {
+          const categories = Object.keys(data);
+          const percentages = Object.values(data).map(decimal => parseFloat(decimal)); // Convert Decimal to float
+
+          // Update series and labels
+          this.setState({
+            series: percentages,
+            options: {
+              ...this.state.options,
+              labels: categories
+            }
+          });
+        })
+        .catch(error => console.error('Error fetching percentage data:', error));
+    }
+
+    render() {
+      return (
+        <div>
+          <div id="chart-cust">
+            <ReactApexChart options={this.state.options} series={this.state.series} type="pie" />
+          </div>
+          <div id="html-dist"></div>
+        </div>
+      );
+    }
+  }
+
+  const domContainer = document.querySelector('#pie');
+  ReactDOM.render(React.createElement(ApexChart), domContainer);
+</script>
+
+
+
+
+
+<script type="text/babel">
+  class ApexChart extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        series: [{
+          name: 'Events Created',
+          type: 'column',  // Set type to 'bar' for events created
+          data: []
+        }, {
+          name: 'Expenses Paid',
+          type: 'line',  // Set type to 'line' for expenses paid
+          data: []
+        }],
+        options: {
+          chart: {
+            height: 350,
+            type: 'line',
+          },
+          stroke: {
+            width: [0, 4]
+          },
+          title: {
+            text: 'Expenses and Events by Month and Day'
+          },
+          dataLabels: {
+            enabled: true,
+            enabledOnSeries: [1]
+          },
+          xaxis: {
+            type: 'datetime',
+            labels: {
+              formatter: function(val) {
+                const date = new Date(val);
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+              }
+            }
+          },
+          yaxis: {
+            title: {
+              text: 'Monthly Expenses',
+            }
+          }
+        }
+      };
+    }
+
+    componentDidMount() {
+      fetch('/expense_and_event_by_month_and_day/')
+          .then(response => response.json())
+          .then(data => {
+              const eventsData = data.events.map(entry => ({
+                  x: new Date(entry.year, entry.month - 1, entry.day).getTime(),
+                  y: entry.event_count
+              }));
+  
+              const expensesData = data.expenses.map(entry => ({
+                  x: new Date(entry.year, entry.month - 1, entry.day).getTime(),
+                  y: entry.expense_count
+              }));
+  
+              this.setState({
+                  series: [{
+                      name: 'Events Created',
+                      type: 'bar',
+                      data: eventsData
+                  }, {
+                      name: 'Expenses Paid',
+                      type: 'line',
+                      data: expensesData
+                  }]
+              });
+          })
+          .catch(error => console.error('Error fetching data:', error));
+  }
+
+  
+    
+
+    render() {
+      return (
+        <div>
+          <div id="chart-2">
+            <ReactApexChart options={this.state.options} series={this.state.series} type="line" height={350} />
+          </div>
+          <div id="html-dist"></div>
+        </div>
+      );
+    }
+  }
+
+  const domContainer = document.querySelector('#simple');
+  ReactDOM.render(<ApexChart />, domContainer);
+</script>
+
+
+
+
+
+
+
+    {% comment %} <script type="text/babel">
+      class ApexChart extends React.Component {
+        constructor(props) {
+          super(props);
+
+          this.state = {
+          
+            series: [
+            {
+              name: 'Events Created',
+              data: []
+            }, 
+            {
+              name: 'Event Expenditure',
+              data: []
+            }, 
+            {
+              name: 'Expenses Paid',
+              data: []
+            }
+            ],
+            options: {
+              chart: {
+                type: 'bar',
+                height: 350,
+              },
+              plotOptions: {
+                bar: {
+                  horizontal: false,
+                  columnWidth: '55%',
+                  endingShape: 'rounded'
+                },
+              },
+              dataLabels: {
+                enabled: false
+              },
+              stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+              },
+              xaxis: {
+                categories: [],
+              },
+              yaxis: [
+                {
+                title: {
+                  text: 'Event Stat'
+                }
+                }
+              ],
+              fill: {
+                opacity: 1
+              },
+              tooltip: {
+                y: {
+                  formatter: function (val) {
+                    return val
+                  }
+                }
+              }
+            },
+          
+          
+          };
+        }
+
+        componentDidMount() {
+            fetch('/analytics_data/')
+              .then(response => response.json())
+              .then(data => {
+                const { series, options } = this.state;
+                this.setState({
+                  series: [
+                    { ...series[0], data: data.bar_chart_events_by_year.data },
+                    { ...series[1], data: data.event_expenditure_data.data },
+                    { ...series[2], data: data.line_chart_expenses_by_month.data }
+                  ],
+                  options: { ...options, xaxis: { ...options.xaxis, categories: data.event_expenditure_data.labels } }
+                });
+              });
+          }
+      
+
+        render() {
+          return (
+            <div>
+              <div id="chart-new">
+                <ReactApexChart options={this.state.options} series={this.state.series} type="bar" height={350} />
+              </div>
+              <div id="html-dist"></div>
+            </div>
+          );
+        }
+      }
+
+      const domContainer = document.querySelector('#app');
+      ReactDOM.render(React.createElement(ApexChart), domContainer);
+    </script> {% endcomment %}
+
+    
+  </body>
+
+{% endblock %}
